@@ -5,7 +5,7 @@ User wants a simple command-line blackjack game in Python. Core gameplay only: d
 
 ## Approach
 
-Two files: `blackjack.py` (game logic + CLI) and `test_blackjack.py` (tests).
+Three files: `blackjack.py` (data model), `game.py` (state machine), `main.py` (CLI), plus `test_blackjack.py` (tests).
 
 ### Structure: separate logic from I/O
 
@@ -21,12 +21,17 @@ Game logic lives in classes and one standalone function — no `input()`, no `pr
 
 - `determine_winner(player: Hand, dealer: Hand) → str` — returns `"player"`, `"dealer"`, or `"push"`
 
-### I/O layer (not unit tested)
+### Game state machine ✓
 
-- `show_hand(hand, hide_second=False)` — prints cards
-- `player_turn(deck, hand)` — loop prompting h/s
-- `dealer_turn(deck, hand)` — hits until hand.value() >= 17
-- `main()` — game loop, play-again prompt
+- **`Move`**: enum — `HIT`, `STAND`
+- **`GameState`**: enum — `PLAYER_TURN`, `DEALER_TURN`, `DONE`
+- **`Game`**: holds `deck`, `player`, `dealer`; exposes `apply_move(move)` and `dealer_step()` (one card at a time for animation); `winner` property returns result when `DONE`
+
+### I/O layer ✓ (not unit tested)
+
+- `show_hand(label, hand, hide_second=False)` — prints cards and value
+- `play_round()` — drives one game: player input loop, animated dealer draw loop, result
+- `main()` — outer play-again loop
 
 ### Game flow
 
@@ -50,12 +55,12 @@ main()
 - Dealer bust → `"player"`
 - Compare totals; equal → `"push"`
 
-## Files
+## Files ✓
 
-- `/Users/russ/dev/rc/claude/blackjack.py` — data model only: `Card`, `Deck`, `Hand`, `determine_winner`
-- `/Users/russ/dev/rc/claude/game.py` — game loop logic: `player_turn`, `dealer_turn`
-- `/Users/russ/dev/rc/claude/main.py` — CLI entry point: `show_hand`, `main`
-- `/Users/russ/dev/rc/claude/test_blackjack.py` — uses `unittest`, covers all code paths and edge cases
+- `/Users/russ/dev/rc/claude/blackjack.py` — data model: `Card`, `Deck`, `Hand`, `determine_winner`
+- `/Users/russ/dev/rc/claude/game.py` — state machine: `Move`, `GameState`, `Game`
+- `/Users/russ/dev/rc/claude/main.py` — CLI: `show_hand`, `play_round`, `main`
+- `/Users/russ/dev/rc/claude/test_blackjack.py` — `unittest`, 10 tests, all passing
 
 ### Key test cases
 - ~~`Hand.value()`: hard totals, soft Ace (A+6=17), Ace flip (A+6+9=16), multiple Aces~~
