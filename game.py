@@ -13,6 +13,10 @@ class GameState(Enum):
     DONE = 'done'
 
 
+def dealer_move(hand: Hand) -> Move:
+    return Move.HIT if hand.value() < 17 else Move.STAND
+
+
 class Game:
     def __init__(self):
         self.deck = Deck()
@@ -43,9 +47,9 @@ class Game:
     def dealer_step(self) -> None:
         if self.state != GameState.DEALER_TURN:
             raise ValueError(f'dealer_step called in state {self.state}')
-        if self.dealer.value() < 17:
+        if dealer_move(self.dealer) == Move.HIT:
             self.dealer.add(self.deck.deal())
-        if self.dealer.value() >= 17:
+        else:
             self._winner = determine_winner(self.player, self.dealer)
             self.state = GameState.DONE
 

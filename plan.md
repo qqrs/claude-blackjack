@@ -58,19 +58,21 @@ main()
 ## Files ✓
 
 - `/Users/russ/dev/rc/claude/blackjack.py` — data model: `Card`, `Deck`, `Hand`, `determine_winner`
-- `/Users/russ/dev/rc/claude/game.py` — state machine: `Move`, `GameState`, `Game`
+- `/Users/russ/dev/rc/claude/game.py` — state machine: `Move`, `GameState`, `Game`, `dealer_move`
 - `/Users/russ/dev/rc/claude/main.py` — CLI: `show_hand`, `play_round`, `main`
-- `/Users/russ/dev/rc/claude/test_blackjack.py` — `unittest`, 10 tests, all passing
+- `/Users/russ/dev/rc/claude/tests/test_blackjack.py` — `unittest`, data model + `determine_winner`
+- `/Users/russ/dev/rc/claude/tests/test_game.py` — `unittest`, `dealer_move`
 
 ### Key test cases
 - ~~`Hand.value()`: hard totals, soft Ace (A+6=17), Ace flip (A+6+9=16), multiple Aces~~
 - ~~`Hand.is_blackjack()`: A+K → True, A+K+2 → False, 10+J → False~~
 - ~~`Hand.is_bust()`: 22 → True, 21 → False~~
 - ~~`determine_winner()`: all outcome combinations~~
+- ~~`dealer_move()`: hits 16, stands on 17 / soft 17 / bust~~
 
 ## Verification
 
 ```
-python -m pytest test_blackjack.py   # or: python -m unittest test_blackjack
-python main.py                       # manual play-through
+python -m unittest discover -s tests -t .   # run all tests from project root
+python main.py                              # manual play-through
 ```
