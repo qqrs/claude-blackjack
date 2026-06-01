@@ -5,7 +5,7 @@ User wants a simple command-line blackjack game in Python. Core gameplay only: d
 
 ## Approach
 
-Three files: `blackjack.py` (data model), `game.py` (state machine), `main.py` (CLI), plus `test_blackjack.py` (tests).
+Three source files: `blackjack.py` (data model), `game.py` (state machine), `main.py` (CLI), plus a `tests/` package.
 
 ### Structure: separate logic from I/O
 
@@ -15,7 +15,7 @@ Game logic lives in classes and one standalone function — no `input()`, no `pr
 
 - **`Card`**: `@dataclass` with `rank: str`, `suit: str`, and `__str__` → `K♠`
 - **`Deck`**: class with `shuffle()` and `deal()` (pops from end of 52-card list)
-- **`Hand`**: class with `add(card)`, `value()`, `is_bust()`, `is_blackjack()`, `cards()`, `__len__()`; `value()` caches result in `_value_cache: int | None`, invalidated on `add()`; `value()` caches its result in `_value_cache: int | None`, invalidated on `add()`
+- **`Hand`**: class with `add(card)`, `value()`, `is_bust()`, `is_blackjack()`, `cards()`, `__len__()`; `value()` caches its result in `_value_cache: int | None`, invalidated on `add()`
 
 ### Standalone function
 
@@ -25,7 +25,10 @@ Game logic lives in classes and one standalone function — no `input()`, no `pr
 
 - **`Move`**: enum — `HIT`, `STAND`
 - **`GameState`**: enum — `PLAYER_TURN`, `DEALER_TURN`, `DONE`
-- **`Game`**: holds `deck`, `player`, `dealer`; exposes `apply_move(move)` and `dealer_step()` (one card at a time for animation); `winner` property returns result when `DONE`
+- **`dealer_move(hand) → Move`**: the dealer's policy — `HIT` while value < 17, else `STAND`
+- **`Game`**: holds `deck`, `player`, `dealer`; `__init__(deck=None)` deals two cards each (deck injectable for testing) and ends instantly on a player blackjack
+  - **`apply_move(move)`**: single entry point for *both* player and dealer — picks the active hand from `state` and `match`es on `(move, state)`. One card per call, so the dealer can be animated by calling `apply_move(dealer_move(game.dealer))` in a loop.
+  - `winner` property returns the result once `DONE`; `_finish_game()` centralizes the `determine_winner` + `DONE` transition
 
 ### I/O layer ✓ (not unit tested)
 
@@ -37,14 +40,13 @@ Game logic lives in classes and one standalone function — no `input()`, no `pr
 
 ```
 main()
-└── game loop (runs until player types 'n')
-    ├── Deck() → shuffle
-    ├── deal 2 cards to player Hand, 2 to dealer Hand (one face-down)
-    ├── check hand.is_blackjack() for instant win
-    ├── player_turn() → calls hand.value() / hand.is_bust() each hit
-    ├── dealer_turn() → hits while hand.value() < 17
-    ├── determine_winner() → print result
-    └── "Play again? (y/n)"
+└── play again loop (until player declines)
+    └── play_round()
+        ├── Game() → deal 2 cards each (dealer's second hidden)
+        ├── while PLAYER_TURN: prompt h/s → apply_move()
+        ├── while DEALER_TURN: show hand → apply_move(dealer_move(...))
+        ├── assert DONE; print "Blackjack!" on a natural
+        └── match game.winner → print result
 ```
 
 ### Ace handling
@@ -58,10 +60,10 @@ main()
 ## Files ✓
 
 - `/Users/russ/dev/rc/claude/blackjack.py` — data model: `Card`, `Deck`, `Hand`, `determine_winner`
-- `/Users/russ/dev/rc/claude/game.py` — state machine: `Move`, `GameState`, `Game`, `dealer_move`
+- `/Users/russ/dev/rc/claude/game.py` — state machine: `Move`, `GameState`, `dealer_move`, `Game`
 - `/Users/russ/dev/rc/claude/main.py` — CLI: `show_hand`, `play_round`, `main`
 - `/Users/russ/dev/rc/claude/tests/test_blackjack.py` — `unittest`, data model + `determine_winner`
-- `/Users/russ/dev/rc/claude/tests/test_game.py` — `unittest`, `dealer_move`
+- `/Users/russ/dev/rc/claude/tests/test_game.py` — `unittest`, `Game` / `dealer_move` / `apply_move`
 
 ### Key test cases
 - ~~`Hand.value()`: hard totals, soft Ace (A+6=17), Ace flip (A+6+9=16), multiple Aces~~
@@ -69,6 +71,8 @@ main()
 - ~~`Hand.is_bust()`: 22 → True, 21 → False~~
 - ~~`determine_winner()`: all outcome combinations~~
 - ~~`dealer_move()`: hits 16, stands on 17 / soft 17 / bust~~
+- ~~`Game` (via injected deck): typical playthrough, player blackjack, both blackjack (push)~~
+- ~~`apply_move()`: full game both turns, player bust, dealer bust, rejects when `DONE`~~
 
 ## Verification
 

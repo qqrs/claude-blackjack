@@ -1,5 +1,5 @@
 import time
-from game import Game, GameState, Move
+from game import Game, GameState, Move, dealer_move
 
 
 def show_hand(label: str, hand, hide_second: bool = False) -> None:
@@ -17,33 +17,36 @@ def play_round() -> None:
     show_hand('Dealer', game.dealer, hide_second=True)
     show_hand('You', game.player)
 
-    if game.state == GameState.DONE:
-        print('Blackjack!')
-    else:
-        while game.state == GameState.PLAYER_TURN:
-            move = input('Hit or stand? (h/s): ').strip().lower()
-            if move == 'h':
+    while game.state == GameState.PLAYER_TURN:
+        choice = input('Hit or stand? (h/s): ').strip().lower()
+        match choice:
+            case 'h':
                 game.apply_move(Move.HIT)
                 show_hand('You', game.player)
-            elif move == 's':
+            case 's':
                 game.apply_move(Move.STAND)
+            case _:
+                print("Please type 'h' or 's'.")
+                continue
 
-        if game.state == GameState.DEALER_TURN:
-            print("Dealer's turn:")
-            show_hand('Dealer', game.dealer)
-            time.sleep(0.8)
-            while game.state == GameState.DEALER_TURN:
-                game.dealer_step()
-                show_hand('Dealer', game.dealer)
-                time.sleep(0.8)
+    while game.state == GameState.DEALER_TURN:
+        show_hand('Dealer', game.dealer)
+        time.sleep(0.8)
+        game.apply_move(dealer_move(game.dealer))
 
-    winner = game.winner
-    if winner == 'player':
-        print('You win!')
-    elif winner == 'dealer':
-        print('Dealer wins.')
-    else:
-        print('Push.')
+    assert game.state == GameState.DONE
+    if game.player.is_blackjack():
+        print('Blackjack!')
+
+    match game.winner:
+        case 'player':
+            print('You win!')
+        case 'dealer':
+            print('Dealer wins.')
+        case 'push':
+            print('Push.')
+        case _:
+            raise ValueError(f'unexpected winner: {game.winner!r}')
 
 
 def main() -> None:
