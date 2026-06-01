@@ -57,6 +57,16 @@ class TestGame(unittest.TestCase):
         self.assertEqual(game.state, GameState.DONE)
         self.assertEqual(game.winner, 'push')
 
+    @unittest.expectedFailure
+    def test_dealer_blackjack_ends_immediately(self):
+        # TODO(vegas): a dealer natural should end the hand at the deal, before
+        # the player acts. __init__ currently only checks the player's blackjack,
+        # so this fails (state stays PLAYER_TURN, winner is None).
+        game = Game(deck=deck_dealing('10', 'A', '9', 'K'))  # player 10,9=19; dealer A,K=21
+        self.assertTrue(game.dealer.is_blackjack())
+        self.assertEqual(game.state, GameState.DONE)
+        self.assertEqual(game.winner, 'dealer')
+
 
 class TestDealerMove(unittest.TestCase):
     def test_dealer_move(self):
