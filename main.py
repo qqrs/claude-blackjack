@@ -29,14 +29,21 @@ def play_round() -> None:
                 print("Please type 'h' or 's'.")
                 continue
 
+    print()
+    show_hand('Dealer', game.dealer)
     while game.state == GameState.DEALER_TURN:
-        show_hand('Dealer', game.dealer)
         time.sleep(0.8)
-        game.apply_move(dealer_move(game.dealer))
+        move = dealer_move(game.dealer)
+        game.apply_move(move)
+        if move == Move.HIT:
+            show_hand('Dealer', game.dealer)
 
     assert game.state == GameState.DONE
+
     if game.player.is_blackjack():
         print('Blackjack!')
+    if game.dealer.is_blackjack():
+        print('Dealer blackjack!')
 
     match game.winner:
         case 'player':
