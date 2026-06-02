@@ -1,5 +1,8 @@
 # Blackjack Web App (Flask, on disco.cloud)
 
+**Status: shipped** — built in steps 1–5 and deployed to disco.cloud from the
+GitHub repo `qqrs/claude-blackjack` (push to `main` triggers a build/deploy).
+
 ## Context
 Add a minimal web interface to the existing CLI blackjack game, hosted on
 [disco.cloud](https://disco.cloud). Constraints from the user:
@@ -39,8 +42,10 @@ the deploy files stay at root while the app code lives in `web/`:
 └── web/
     ├── __init__.py     # makes `web` a package for `web.app:app`
     ├── app.py          # Flask app — the new I/O layer
+    ├── static/
+    │   └── style.css   # all styling (served via Flask's static route)
     └── templates/
-        └── index.html  # the only page
+        └── index.html  # the only page (+ inline reveal script)
 ```
 
 `web/app.py` imports the core with `from game import Game, ...`; the core modules
@@ -76,11 +81,14 @@ games: dict[str, Game] = {}   # session_id -> Game
 ## Templates / display
 - `index.html` shows: dealer hand (hole card hidden while `state == PLAYER_TURN`),
   player hand + value, Hit/Stand buttons while playing, and the result text +
-  "New Game" button when `DONE`.
-- A small helper formats a hand for display and hides the dealer's second card —
-  the web analogue of `show_hand`. Reuse the CLI's wording: "Blackjack!",
+  "New game" button when `DONE`.
+- `hand_view()` formats a hand for display and hides the dealer's hole card — the
+  web analogue of `show_hand` (same `hide_hole_card` param name). `card_view()`
+  returns `{rank, suit, red}` per card. Reuse the CLI's wording: "Blackjack!",
   "Dealer blackjack!", "You win!", "Dealer wins.", "Push."
-- ~10 lines of inline CSS so it's legible; no CSS framework.
+- Cards render as card faces (rank over suit) with red suits in red and the
+  dealer's hole card as a styled face-down back. Styling lives in
+  `web/static/style.css`; no CSS framework.
 
 ## Dealer animation (frontend only)
 Goal: when the result page loads after a Stand, the dealer's cards appear one at a
@@ -91,11 +99,12 @@ Approach (progressive enhancement, vanilla JS, ~15 lines inline in `index.html`)
 - The template renders every dealer card, tagging the upcard separately from the
   cards revealed at showdown (the hole card + any draws), e.g. a
   `class="dealer-reveal"` on each of the latter.
-- On `DOMContentLoaded`, **if** the game is `DONE`, the script hides all
-  `.dealer-reveal` cards, then reveals them one every ~600ms via `setTimeout`.
-  Optionally reveal the result text after the last card so the outcome isn't
-  spoiled early.
-- If JS is disabled, nothing is hidden and all cards simply show — fully playable.
+- On load, **if** any `.dealer-reveal` cards exist, the script hides them — plus
+  the dealer total (`#dealer-total`) and the result text — then reveals the cards
+  one every ~600ms via `setTimeout`. The dealer total and result appear together
+  with the final card, so neither is spoiled early.
+- If JS is disabled, nothing is hidden and all cards, the total, and the result
+  simply show — fully playable.
 
 Scope note: the script animates whenever a completed dealer hand is shown, which
 covers the post-Stand case (and harmlessly re-runs on a manual refresh). Limiting
@@ -136,10 +145,13 @@ gunicorn for a more production-appropriate process. Port must match `disco.json`
 ```bash
 disco init root@<your-disco-host>          # one-time, connects the CLI
 disco github:apps:add                       # authorize GitHub
-disco projects:add --name blackjack \
+disco projects:add --name qq21 \
     --github <user>/<repo> --domain <domain>
 # set SECRET_KEY in the disco web UI under the project's env vars
 ```
+Done — the project is set up on disco as `qq21`; pushing to `main` deploys. View
+logs with `disco logs --project qq21 [--service web]`; check a build with
+`disco deploy:output`.
 
 ## Out of scope (per "minimal")
 No JS framework or build step (just the one inline reveal script), no CSS
@@ -158,9 +170,10 @@ python -m unittest discover -s tests -t .   # core tests still pass (unchanged)
 ```
 
 ## Build checklist
-- [ ] `web/app.py` — routes, in-memory games dict, session cookie, SECRET_KEY env
-- [ ] `web/templates/index.html` — hands, buttons, result; hole-card hidden mid-hand
-- [ ] dealer reveal animation — inline vanilla JS in `index.html` (no backend change)
-- [ ] `web/__init__.py`
-- [ ] `requirements.txt`, `Dockerfile`, `disco.json` (root)
-- [ ] Local run-through, then deploy to disco
+- [x] `web/app.py` — routes, in-memory games dict, session cookie, SECRET_KEY env
+- [x] `web/templates/index.html` — hands, buttons, result; hole-card hidden mid-hand
+- [x] `web/static/style.css` — card-face styling, suit colors, face-down back
+- [x] dealer reveal animation — inline vanilla JS in `index.html` (no backend change)
+- [x] `web/__init__.py`
+- [x] `requirements.txt`, `Dockerfile`, `disco.json` (root)
+- [x] Local run-through, then deploy to disco
