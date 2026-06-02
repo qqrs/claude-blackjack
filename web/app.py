@@ -31,12 +31,20 @@ def current_game() -> Game:
     return games[sid]
 
 
+RED_SUITS = {"♥", "♦"}
+
+
+def card_view(card):
+    """Return a single card's display fields."""
+    return {"rank": card.rank, "suit": card.suit, "red": card.suit in RED_SUITS}
+
+
 def hand_view(hand, hide_hole_card: bool):
     """Return the cards and hand value to be displayed."""
     cards = hand.cards()
     if hide_hole_card:
-        return {"cards": [str(cards[0]), "??"], "total": None}
-    return {"cards": [str(c) for c in cards], "total": hand.value()}
+        return {"cards": [card_view(cards[0]), {"hidden": True}], "total": None}
+    return {"cards": [card_view(c) for c in cards], "total": hand.value()}
 
 
 @app.route("/")
