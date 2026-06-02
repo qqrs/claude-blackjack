@@ -26,14 +26,15 @@ Game logic lives in classes and one standalone function — no `input()`, no `pr
 - **`Move`**: enum — `HIT`, `STAND`
 - **`GameState`**: enum — `PLAYER_TURN`, `DEALER_TURN`, `DONE`
 - **`dealer_move(hand) → Move`**: the dealer's policy — `HIT` while value < 17, else `STAND`
-- **`Game`**: holds `deck`, `player`, `dealer`; `__init__(deck=None)` deals two cards each (deck injectable for testing) and ends instantly on a player blackjack
+- **`Game`**: holds `deck`, `player`, `dealer`; `__init__(deck=None)` deals two cards each (deck injectable for testing) and ends instantly if either side has a natural
   - **`apply_move(move)`**: single entry point for *both* player and dealer — picks the active hand from `state` and `match`es on `(move, state)`. One card per call, so the dealer can be animated by calling `apply_move(dealer_move(game.dealer))` in a loop.
   - `winner` property returns the result once `DONE`; `_finish_game()` centralizes the `determine_winner` + `DONE` transition
 
 ### I/O layer ✓ (not unit tested)
 
 - `show_hand(label, hand, hide_second=False)` — prints cards and value
-- `play_round()` — drives one game: player input loop, animated dealer draw loop, result
+- `play_round()` — drives one game: player input loop, then reveal the dealer's
+  hole card, animated dealer draw loop (shows each drawn card), result
 - `main()` — outer play-again loop
 
 ### Game flow
@@ -44,18 +45,20 @@ main()
     └── play_round()
         ├── Game() → deal 2 cards each (dealer's second hidden)
         ├── while PLAYER_TURN: prompt h/s → apply_move()
-        ├── while DEALER_TURN: show hand → apply_move(dealer_move(...))
-        ├── assert DONE; print "Blackjack!" on a natural
+        ├── reveal dealer hole card
+        ├── while DEALER_TURN: apply_move(dealer_move(...)) → show each draw
+        ├── assert DONE; announce player / dealer natural
         └── match game.winner → print result
 ```
 
 ### Ace handling
 `Hand.value()` sums Aces as 11, then subtracts 10 per Ace while total > 21.
 
-### Win conditions (in `determine_winner`)
-- Player bust → `"dealer"`
+### Win conditions (in `determine_winner`, in order)
+- Player bust → `"dealer"` (an immediate loss, even if the dealer would also bust)
 - Dealer bust → `"player"`
-- Compare totals; equal → `"push"`
+- Natural beats a non-natural (incl. a multi-card 21); both naturals → `"push"`
+- Otherwise compare totals; equal → `"push"`
 
 ### Special cases (per [Wikipedia](https://en.wikipedia.org/wiki/Blackjack))
 - A natural is 21 on the *first two cards*, and beats a 3+-card 21 — so blackjack
@@ -77,9 +80,9 @@ main()
 - ~~`Hand.value()`: hard totals, soft Ace (A+6=17), Ace flip (A+6+9=16), multiple Aces~~
 - ~~`Hand.is_blackjack()`: A+K → True, A+K+2 → False, 10+J → False~~
 - ~~`Hand.is_bust()`: 22 → True, 21 → False~~
-- ~~`determine_winner()`: all outcome combinations~~
+- ~~`determine_winner()`: busts, wins/push by total, natural beats multi-card 21~~
 - ~~`dealer_move()`: hits 16, stands on 17 / soft 17 / bust~~
-- ~~`Game` (via injected deck): typical playthrough, player blackjack, both blackjack (push)~~
+- ~~`Game` (via injected deck): player win, player / dealer / both blackjack at deal~~
 - ~~`apply_move()`: full game both turns, player bust, dealer bust, rejects when `DONE`~~
 
 ## Verification
