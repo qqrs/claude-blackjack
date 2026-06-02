@@ -2,9 +2,9 @@ import time
 from game import Game, GameState, Move, dealer_move
 
 
-def show_hand(label: str, hand, hide_second: bool = False) -> None:
+def show_hand(label: str, hand, hide_hole_card: bool = False) -> None:
     cards = hand.cards()
-    if hide_second and len(cards) >= 2:
+    if hide_hole_card and len(cards) >= 2:
         parts = [str(cards[0]), '??']
         print(f'{label}: {" ".join(parts)}')
     else:
@@ -14,7 +14,7 @@ def show_hand(label: str, hand, hide_second: bool = False) -> None:
 
 def play_round() -> None:
     game = Game()
-    show_hand('Dealer', game.dealer, hide_second=True)
+    show_hand('Dealer', game.dealer, hide_hole_card=True)
     show_hand('You', game.player)
 
     while game.state == GameState.PLAYER_TURN:
