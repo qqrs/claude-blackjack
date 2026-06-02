@@ -57,7 +57,7 @@ class TestDetermineWinner(unittest.TestCase):
     def test_busts(self):
         self.assertEqual(determine_winner(hand('K', 'Q', '5'), hand('K', '7')), 'dealer')
         self.assertEqual(determine_winner(hand('K', '7'), hand('K', 'Q', '5')), 'player')
-        # player bust takes precedence when both bust
+        # a player bust is an immediate loss, even if the dealer would also bust
         self.assertEqual(determine_winner(hand('K', 'Q', '5'), hand('K', 'Q', '5')), 'dealer')
 
     def test_wins(self):

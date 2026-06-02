@@ -68,10 +68,13 @@ class Hand:
 
 
 def determine_winner(player: Hand, dealer: Hand) -> str:
+    # check for busts
     if player.is_bust():
         return 'dealer'
     if dealer.is_bust():
         return 'player'
+
+    # check for blackjacks
     match player.is_blackjack(), dealer.is_blackjack():
         case True, True:
             return 'push'
@@ -79,6 +82,8 @@ def determine_winner(player: Hand, dealer: Hand) -> str:
             return 'player'
         case False, True:
             return 'dealer'
+
+    # check hand value
     pv, dv = player.value(), dealer.value()
     if pv > dv:
         return 'player'
