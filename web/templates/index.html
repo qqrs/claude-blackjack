@@ -76,7 +76,7 @@
     <section class="hand">
       <h2 class="label">Dealer{% if dealer.total is not none %} <span class="total">{{ dealer.total }}</span>{% endif %}</h2>
       <div class="cards">
-        {% for card in dealer.cards %}<span class="card">{{ card }}</span>{% endfor %}
+        {% for card in dealer.cards %}<span class="card{% if result and not loop.first %} dealer-reveal{% endif %}">{{ card }}</span>{% endfor %}
       </div>
     </section>
 
@@ -103,5 +103,29 @@
       </div>
     {% endif %}
   </main>
+
+  <script>
+    // Progressive enhancement: reveal the dealer's hole card and any draws one
+    // at a time. With JS off, all cards (and the result) are simply shown.
+    (function () {
+      var cards = document.querySelectorAll('.dealer-reveal');
+      if (!cards.length) return;
+      var result = document.querySelector('.result');
+      cards.forEach(function (el) { el.style.visibility = 'hidden'; });
+      if (result) result.style.visibility = 'hidden';
+
+      var i = 0;
+      function step() {
+        if (i < cards.length) {
+          cards[i].style.visibility = 'visible';
+          i += 1;
+          setTimeout(step, 600);
+        } else if (result) {
+          result.style.visibility = 'visible';
+        }
+      }
+      setTimeout(step, 400);
+    })();
+  </script>
 </body>
 </html>
