@@ -11,7 +11,7 @@
     <h1>&spades; Blackjack &hearts;</h1>
 
     <section class="hand">
-      <h2 class="label">Dealer{% if dealer.total is not none %} <span class="total">{{ dealer.total }}</span>{% endif %}</h2>
+      <h2 class="label">Dealer{% if dealer.total is not none %} <span class="total" id="dealer-total">{{ dealer.total }}</span>{% endif %}</h2>
       <div class="cards">
         {% for card in dealer.cards %}
           {% if card.hidden %}<span class="card back"></span>
@@ -51,8 +51,10 @@
       var cards = document.querySelectorAll('.dealer-reveal');
       if (!cards.length) return;
       var result = document.querySelector('.result');
+      var total = document.getElementById('dealer-total');
       cards.forEach(function (el) { el.style.visibility = 'hidden'; });
       if (result) result.style.visibility = 'hidden';
+      if (total) total.style.visibility = 'hidden';  // hide total until last card
 
       var i = 0;
       function step() {
@@ -60,8 +62,9 @@
           cards[i].style.visibility = 'visible';
           i += 1;
           setTimeout(step, 600);
-        } else if (result) {
-          result.style.visibility = 'visible';
+        } else {
+          if (total) total.style.visibility = 'visible';
+          if (result) result.style.visibility = 'visible';
         }
       }
       setTimeout(step, 400);
