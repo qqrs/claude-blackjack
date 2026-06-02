@@ -29,7 +29,7 @@ def rigged_game(player, dealer, upcoming):
 
 class TestGame(unittest.TestCase):
     # deal order is player, dealer, player, dealer
-    def test_player_wins(self):
+    def test_player_win(self):
         # player 16 -> hit 3 -> 19 -> stand; dealer stands on 17; player wins
         game = Game(deck=deck_dealing('10', '10', '6', '7', '3'))
         self.assertEqual(game.state, GameState.PLAYER_TURN)

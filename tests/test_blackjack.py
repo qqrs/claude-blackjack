@@ -60,10 +60,13 @@ class TestDetermineWinner(unittest.TestCase):
         # player bust takes precedence when both bust
         self.assertEqual(determine_winner(hand('K', 'Q', '5'), hand('K', 'Q', '5')), 'dealer')
 
-    def test_totals(self):
+    def test_wins(self):
         self.assertEqual(determine_winner(hand('K', '9'), hand('K', '8')), 'player')
         self.assertEqual(determine_winner(hand('K', '8'), hand('K', '9')), 'dealer')
         self.assertEqual(determine_winner(hand('K', '9'), hand('K', '9')), 'push')
+
+    def test_blackjack_beats_multicard_21(self):
+        self.assertEqual(determine_winner(hand('A', 'K'), hand('7', '7', '7')), 'player')
 
 
 if __name__ == '__main__':
