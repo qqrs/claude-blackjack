@@ -50,6 +50,23 @@
       font-weight: 600;
       text-align: center;
     }
+    .result { text-align: center; font-size: 1.2rem; font-weight: 600; margin: 0; }
+    form { margin: 0; }
+    .actions { display: flex; gap: 0.6rem; }
+    .actions form { flex: 1; }
+    button {
+      width: 100%;
+      font: inherit;
+      font-size: 1.05rem;
+      font-weight: 600;
+      padding: 0.7rem 1rem;
+      border: none;
+      border-radius: 8px;
+      background: #f5f5f5;
+      color: #0b3d22;
+      cursor: pointer;
+    }
+    button:hover { background: #fff; }
   </style>
 </head>
 <body>
@@ -69,6 +86,22 @@
         {% for card in player.cards %}<span class="card">{{ card }}</span>{% endfor %}
       </div>
     </section>
+
+    {% if result %}
+      <p class="result">
+        {% if result.player_blackjack %}Blackjack! {% endif %}
+        {% if result.dealer_blackjack %}Dealer blackjack! {% endif %}
+        {{ result.outcome }}
+      </p>
+      <form method="post" action="{{ url_for('new') }}">
+        <button>New game</button>
+      </form>
+    {% else %}
+      <div class="actions">
+        <form method="post" action="{{ url_for('hit') }}"><button>Hit</button></form>
+        <form method="post" action="{{ url_for('stand') }}"><button>Stand</button></form>
+      </div>
+    {% endif %}
   </main>
 </body>
 </html>
