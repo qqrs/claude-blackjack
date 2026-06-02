@@ -29,7 +29,7 @@ def rigged_game(player, dealer, upcoming):
 
 class TestGame(unittest.TestCase):
     # deal order is player, dealer, player, dealer
-    def test_typical_playthrough(self):
+    def test_player_wins(self):
         # player 16 -> hit 3 -> 19 -> stand; dealer stands on 17; player wins
         game = Game(deck=deck_dealing('10', '10', '6', '7', '3'))
         self.assertEqual(game.state, GameState.PLAYER_TURN)
@@ -50,22 +50,18 @@ class TestGame(unittest.TestCase):
         self.assertEqual(game.state, GameState.DONE)
         self.assertEqual(game.winner, 'player')
 
+    def test_dealer_blackjack(self):
+        game = Game(deck=deck_dealing('10', 'A', '9', 'K'))  # player 10,9=19; dealer A,K=21
+        self.assertTrue(game.dealer.is_blackjack())
+        self.assertEqual(game.state, GameState.DONE)
+        self.assertEqual(game.winner, 'dealer')
+
     def test_both_blackjack(self):
         game = Game(deck=deck_dealing('A', 'A', 'K', 'K'))  # both A,K=21
         self.assertTrue(game.player.is_blackjack())
         self.assertTrue(game.dealer.is_blackjack())
         self.assertEqual(game.state, GameState.DONE)
         self.assertEqual(game.winner, 'push')
-
-    @unittest.expectedFailure
-    def test_dealer_blackjack_ends_immediately(self):
-        # TODO(vegas): a dealer natural should end the hand at the deal, before
-        # the player acts. __init__ currently only checks the player's blackjack,
-        # so this fails (state stays PLAYER_TURN, winner is None).
-        game = Game(deck=deck_dealing('10', 'A', '9', 'K'))  # player 10,9=19; dealer A,K=21
-        self.assertTrue(game.dealer.is_blackjack())
-        self.assertEqual(game.state, GameState.DONE)
-        self.assertEqual(game.winner, 'dealer')
 
 
 class TestDealerMove(unittest.TestCase):

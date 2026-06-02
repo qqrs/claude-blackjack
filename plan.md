@@ -57,13 +57,21 @@ main()
 - Dealer bust → `"player"`
 - Compare totals; equal → `"push"`
 
+### Special cases (per [Wikipedia](https://en.wikipedia.org/wiki/Blackjack))
+- A natural is 21 on the *first two cards*, and beats a 3+-card 21 — so blackjack
+  status, not just `value() == 21`, decides the winner.
+- Both player and dealer have a natural → **push** (handled).
+- A natural for either side ends the hand at the deal, before the player acts:
+  if either's two cards total 21, the round is immediately `DONE` (handled —
+  `Game.__init__` checks both hands).
+
 ## Files ✓
 
-- `/Users/russ/dev/rc/claude/blackjack.py` — data model: `Card`, `Deck`, `Hand`, `determine_winner`
-- `/Users/russ/dev/rc/claude/game.py` — state machine: `Move`, `GameState`, `dealer_move`, `Game`
-- `/Users/russ/dev/rc/claude/main.py` — CLI: `show_hand`, `play_round`, `main`
-- `/Users/russ/dev/rc/claude/tests/test_blackjack.py` — `unittest`, data model + `determine_winner`
-- `/Users/russ/dev/rc/claude/tests/test_game.py` — `unittest`, `Game` / `dealer_move` / `apply_move`
+- `blackjack.py` — data model: `Card`, `Deck`, `Hand`, `determine_winner`
+- `game.py` — state machine: `Move`, `GameState`, `dealer_move`, `Game`
+- `main.py` — CLI: `show_hand`, `play_round`, `main`
+- `tests/test_blackjack.py` — `unittest`, data model + `determine_winner`
+- `tests/test_game.py` — `unittest`, `Game` / `dealer_move` / `apply_move`
 
 ### Key test cases
 - ~~`Hand.value()`: hard totals, soft Ace (A+6=17), Ace flip (A+6+9=16), multiple Aces~~

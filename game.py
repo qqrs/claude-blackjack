@@ -14,6 +14,7 @@ class GameState(Enum):
 
 
 def dealer_move(hand: Hand) -> Move:
+    # Stand on any 17, including soft 17 (S17 rule).
     return Move.HIT if hand.value() < 17 else Move.STAND
 
 
@@ -30,7 +31,7 @@ class Game:
             self.dealer.add(self.deck.deal())
         self._winner: str | None = None
         self.state = GameState.PLAYER_TURN
-        if self.player.is_blackjack():
+        if self.player.is_blackjack() or self.dealer.is_blackjack():
             self._finish_game()
 
     def apply_move(self, move: Move) -> None:
